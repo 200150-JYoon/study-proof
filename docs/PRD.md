@@ -68,6 +68,9 @@
 - 회원가입: 이번엔 아니요
 - 폴더: C:\site-study (기존 시험기간 응원 사이트 C:\site 와 따로)
 - 배포: GitHub 공개 저장소 + Vercel
+  - 사이트 주소: https://study-proof.vercel.app
+  - 저장소: https://github.com/200150-JYoon/study-proof (GitHub에 Push 하면 Vercel이 알아서 다시 배포한다)
+  - 기록 지우기(엄마용): 그 휴대폰에서 https://study-proof.vercel.app/?reset 을 열고 '확인'을 누르면 그 휴대폰의 인증 기록·치킨 칸이 지워진다
 
 ## 13. 만드는 순서 (클로드가 처음부터 끝까지 한 번에)
 1. 스타일(색·글꼴)을 분위기에 맞게 정하고 첫 화면부터 만든다
