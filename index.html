@@ -1,0 +1,341 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>성현 공부 인증</title>
+<meta name="theme-color" content="#0b0d14">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔥</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0b0d14;
+    --panel: #141826;
+    --panel-2: #1b2033;
+    --line: #262c44;
+    --text: #eef0f7;
+    --muted: #8a91ad;
+    --fire: #ff7a1a;
+    --fire-2: #ffb347;
+    --gold: #ffc93d;
+    --neon: #3be8d0;
+    --danger: #ff5470;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body {
+    background:
+      radial-gradient(120% 60% at 50% -10%, rgba(255,122,26,.18), transparent 60%),
+      var(--bg);
+    color: var(--text);
+    font-family: "Noto Sans KR", system-ui, sans-serif;
+    min-height: 100vh;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .wrap { max-width: 440px; margin: 0 auto; padding: 24px 16px 48px; }
+  .display { font-family: "Black Han Sans", "Noto Sans KR", sans-serif; font-weight: 400; letter-spacing: .5px; }
+
+  /* 첫 화면 */
+  .hero { text-align: center; padding: 8px 0 20px; }
+  .hello { color: var(--muted); font-size: 15px; margin: 0 0 6px; }
+  .hello b { color: var(--text); }
+  .flame {
+    font-size: 72px; line-height: 1; margin: 6px 0 2px;
+    filter: drop-shadow(0 0 18px rgba(255,122,26,.65));
+    animation: flicker 2.4s ease-in-out infinite;
+  }
+  .flame.off { filter: grayscale(1) brightness(.5); animation: none; }
+  @keyframes flicker { 0%,100% { transform: scale(1) rotate(-2deg); } 50% { transform: scale(1.06) rotate(2deg); } }
+  .streak { font-size: 54px; margin: 0; line-height: 1.1;
+    background: linear-gradient(180deg, var(--fire-2), var(--fire));
+    -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .streak.off { background: none; color: var(--muted); }
+  .tagline { margin: 10px 0 0; font-size: 17px; font-weight: 700; }
+
+  .card {
+    background: var(--panel); border: 1px solid var(--line);
+    border-radius: 18px; padding: 18px; margin-top: 14px;
+  }
+  .card h2 { margin: 0 0 12px; font-size: 18px; display: flex; justify-content: space-between; align-items: baseline; }
+  .card h2 small { font-family: "Noto Sans KR", sans-serif; font-size: 13px; color: var(--muted); font-weight: 500; }
+
+  /* 치킨 칸 */
+  .slots { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; }
+  .slot {
+    aspect-ratio: 1; border-radius: 10px; background: var(--panel-2);
+    border: 1px dashed var(--line); display: grid; place-items: center;
+    font-size: 13px; color: var(--muted);
+  }
+  .slot.on { background: linear-gradient(160deg, var(--fire-2), var(--fire)); border: 0; color: #2a1200; font-weight: 700;
+    box-shadow: 0 0 12px rgba(255,122,26,.45); }
+  .slot.goal { font-size: 20px; }
+  .slot.goal.on { background: linear-gradient(160deg, #fff1b8, var(--gold)); box-shadow: 0 0 16px rgba(255,201,61,.6); }
+  .reward-msg { margin: 12px 0 0; font-size: 15px; }
+  .reward-msg b { color: var(--gold); }
+  .win {
+    margin-top: 12px; padding: 14px; border-radius: 14px; text-align: center;
+    background: linear-gradient(160deg, rgba(255,201,61,.18), rgba(255,122,26,.12));
+    border: 1px solid rgba(255,201,61,.5);
+  }
+  .win .display { font-size: 24px; color: var(--gold); margin: 0 0 4px; }
+  .win p { margin: 0; font-size: 14px; color: var(--text); }
+
+  /* 오늘 인증 */
+  .label { font-size: 14px; color: var(--muted); margin: 0 0 8px; }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+  .chip {
+    border: 1px solid var(--line); background: var(--panel-2); color: var(--text);
+    font: inherit; font-size: 15px; padding: 9px 14px; border-radius: 999px; cursor: pointer;
+  }
+  .chip[aria-pressed="true"] { border-color: var(--neon); color: var(--neon); background: rgba(59,232,208,.1); }
+  input[type=text] {
+    width: 100%; font: inherit; font-size: 16px; color: var(--text);
+    background: var(--panel-2); border: 1px solid var(--line); border-radius: 12px; padding: 13px 14px;
+  }
+  input[type=text]:focus { outline: none; border-color: var(--neon); }
+  .count { text-align: right; font-size: 12px; color: var(--muted); margin: 6px 2px 14px; }
+  .btn {
+    width: 100%; border: 0; border-radius: 14px; padding: 16px; cursor: pointer;
+    font-family: "Black Han Sans", sans-serif; font-size: 20px; letter-spacing: 1px;
+    background: linear-gradient(180deg, var(--fire-2), var(--fire)); color: #2a1200;
+    box-shadow: 0 6px 20px rgba(255,122,26,.35);
+  }
+  .btn:disabled { background: var(--panel-2); color: var(--muted); box-shadow: none; cursor: not-allowed; }
+  .done { text-align: center; padding: 6px 0; }
+  .done .display { font-size: 26px; color: var(--neon); margin: 0 0 6px; }
+  .done p { margin: 0; color: var(--muted); font-size: 14px; }
+  .done .mine { margin-top: 12px; color: var(--text); font-size: 15px; }
+
+  /* 지난 기록 */
+  .log { list-style: none; margin: 0; padding: 0; }
+  .log li { padding: 12px 0; border-top: 1px solid var(--line); }
+  .log li:first-child { border-top: 0; padding-top: 0; }
+  .log .meta { font-size: 13px; color: var(--muted); display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .tag { font-size: 12px; color: var(--neon); border: 1px solid rgba(59,232,208,.4); border-radius: 6px; padding: 1px 6px; }
+  .tag.gold { color: var(--gold); border-color: rgba(255,201,61,.5); }
+  .log .text { margin: 4px 0 0; font-size: 15px; word-break: break-all; }
+  .empty { color: var(--muted); font-size: 14px; margin: 0; }
+
+  .toast {
+    position: fixed; left: 50%; bottom: 28px; transform: translate(-50%, 20px);
+    background: var(--panel-2); border: 1px solid var(--fire); color: var(--text);
+    padding: 12px 18px; border-radius: 12px; font-weight: 700; opacity: 0; transition: .25s; pointer-events: none;
+    max-width: calc(100% - 32px); text-align: center;
+  }
+  .toast.show { opacity: 1; transform: translate(-50%, 0); }
+  footer { text-align: center; color: var(--muted); font-size: 12px; margin-top: 28px; }
+</style>
+</head>
+<body>
+<main class="wrap">
+  <section class="hero">
+    <p class="hello"><b>성현</b>, 접속 완료 👊</p>
+    <div class="flame" id="flame">🔥</div>
+    <p class="streak display" id="streak">0일째</p>
+    <p class="tagline" id="tagline">오늘 한 줄만 남기면 끝</p>
+  </section>
+
+  <section class="card">
+    <h2 class="display">치킨까지 <small id="left">7일 남음</small></h2>
+    <div class="slots" id="slots"></div>
+    <p class="reward-msg" id="rewardMsg">연속 <b>7일</b> 인증하면 <b>치킨(먹고 싶은 것) 🍗</b></p>
+    <div class="win" id="win" hidden>
+      <p class="display">🍗 치킨 획득!</p>
+      <p>엄마한테 이 화면 보여 주기. 내일부터 다시 0칸에서 시작!</p>
+    </div>
+  </section>
+
+  <section class="card" id="today">
+    <h2 class="display">오늘 공부 인증 <small id="todayDate"></small></h2>
+    <div id="form">
+      <p class="label">오늘 공부한 과목 (여러 개 가능)</p>
+      <div class="chips" id="chips"></div>
+      <p class="label">오늘 한 것 한 줄</p>
+      <input type="text" id="line" maxlength="60" placeholder="예: 수학 문제집 3쪽" autocomplete="off">
+      <p class="count"><span id="count">0</span>/60</p>
+      <button class="btn" id="save" disabled>오늘 공부 인증</button>
+    </div>
+    <div class="done" id="done" hidden>
+      <p class="display">✓ 오늘 인증 완료</p>
+      <p>내일 다시 열려요</p>
+      <p class="mine" id="mine"></p>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2 class="display">지난 인증 기록 <small id="total"></small></h2>
+    <ul class="log" id="log"></ul>
+  </section>
+
+  <footer>기록은 이 휴대폰에만 저장돼요</footer>
+</main>
+<div class="toast" id="toast"></div>
+
+<script>
+  const SUBJECTS = ["국어", "수학", "영어", "탐구", "기타"];
+  const GOAL = 7;
+  const KEY = "study-proof-v1";
+
+  // 날짜는 휴대폰 시간 기준 'YYYY-MM-DD'
+  const ymd = d => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+  const addDays = (s, n) => { const [y, m, d] = s.split("-").map(Number); return ymd(new Date(y, m - 1, d + n)); };
+  const today = () => ymd(new Date());
+
+  function load() {
+    try {
+      const data = JSON.parse(localStorage.getItem(KEY));
+      if (data && Array.isArray(data.records)) return { records: data.records, rewards: data.rewards || [] };
+    } catch (e) {}
+    return { records: [], rewards: [] };
+  }
+  function save(data) {
+    try { localStorage.setItem(KEY, JSON.stringify(data)); return true; } catch (e) { return false; }
+  }
+
+  // 엄마용: ?reset 으로 열면 이 기기의 기록을 지운다
+  if (new URLSearchParams(location.search).has("reset")) {
+    if (confirm("이 휴대폰의 공부 인증 기록과 치킨 칸을 모두 지울까요?")) {
+      try { localStorage.removeItem(KEY); } catch (e) {}
+      alert("지웠어요.");
+    }
+    history.replaceState(null, "", location.pathname);
+  }
+
+  let data = load();
+  const picked = new Set();
+
+  // 오늘(또는 어제)부터 거꾸로 이어진 날짜들
+  function streakDays() {
+    const days = new Set(data.records.map(r => r.date));
+    let d = days.has(today()) ? today() : addDays(today(), -1);
+    const run = [];
+    while (days.has(d)) { run.push(d); d = addDays(d, -1); }
+    return run;
+  }
+
+  // 치킨 칸: 연속 기록 중 마지막 치킨 받은 날 이후의 날 수 (하루 빠지면 0)
+  function chickenProgress(run) {
+    const last = data.rewards[data.rewards.length - 1] || "";
+    return run.filter(d => d > last).length;
+  }
+
+  function render() {
+    const run = streakDays();
+    const streak = run.length;
+    const doneToday = data.records.some(r => r.date === today());
+    const wonToday = data.rewards.includes(today());
+    const progress = wonToday ? GOAL : chickenProgress(run);
+
+    document.getElementById("flame").classList.toggle("off", streak === 0);
+    const st = document.getElementById("streak");
+    st.textContent = `${streak}일째`;
+    st.classList.toggle("off", streak === 0);
+
+    let tag;
+    if (wonToday) tag = "연속 7일 달성. 치킨 먹자 🍗";
+    else if (doneToday) tag = "오늘 불 지켰다. 내일도 이어 가자";
+    else if (streak > 0) tag = `오늘 안 하면 ${streak}일 불 꺼짐 😱`;
+    else if (data.records.length) tag = "불 꺼졌다. 오늘 다시 붙이자";
+    else tag = "오늘 한 줄만 남기면 끝";
+    document.getElementById("tagline").textContent = tag;
+
+    const slots = document.getElementById("slots");
+    slots.innerHTML = "";
+    for (let i = 1; i <= GOAL; i++) {
+      const el = document.createElement("div");
+      el.className = "slot" + (i <= progress ? " on" : "") + (i === GOAL ? " goal" : "");
+      el.textContent = i === GOAL ? "🍗" : i;
+      slots.appendChild(el);
+    }
+    document.getElementById("left").textContent = wonToday ? "획득!" : `${GOAL - progress}일 남음`;
+    document.getElementById("win").hidden = !wonToday;
+
+    const now = new Date();
+    document.getElementById("todayDate").textContent = `${now.getMonth() + 1}/${now.getDate()} (${"일월화수목금토"[now.getDay()]})`;
+    document.getElementById("form").hidden = doneToday;
+    document.getElementById("done").hidden = !doneToday;
+    if (doneToday) {
+      const r = data.records.find(r => r.date === today());
+      document.getElementById("mine").textContent = `${r.subjects.join(" · ")} — ${r.line}`;
+    }
+
+    const log = document.getElementById("log");
+    log.innerHTML = "";
+    const list = [...data.records].sort((a, b) => b.date.localeCompare(a.date));
+    document.getElementById("total").textContent = list.length ? `총 ${list.length}일` : "";
+    if (!list.length) {
+      log.innerHTML = '<li><p class="empty">아직 기록이 없어요. 첫 인증을 남겨 보자.</p></li>';
+    }
+    for (const r of list) {
+      const li = document.createElement("li");
+      const meta = document.createElement("div");
+      meta.className = "meta";
+      const [, m, d] = r.date.split("-").map(Number);
+      meta.append(`${m}/${d} ${r.time || ""}`);
+      for (const s of r.subjects) {
+        const t = document.createElement("span");
+        t.className = "tag"; t.textContent = s; meta.append(t);
+      }
+      if (data.rewards.includes(r.date)) {
+        const t = document.createElement("span");
+        t.className = "tag gold"; t.textContent = "🍗 치킨 획득"; meta.append(t);
+      }
+      const p = document.createElement("p");
+      p.className = "text"; p.textContent = r.line;
+      li.append(meta, p);
+      log.appendChild(li);
+    }
+  }
+
+  // 과목 버튼
+  const chips = document.getElementById("chips");
+  for (const s of SUBJECTS) {
+    const b = document.createElement("button");
+    b.className = "chip"; b.type = "button"; b.textContent = s; b.setAttribute("aria-pressed", "false");
+    b.onclick = () => {
+      picked.has(s) ? picked.delete(s) : picked.add(s);
+      b.setAttribute("aria-pressed", picked.has(s));
+      check();
+    };
+    chips.appendChild(b);
+  }
+  const line = document.getElementById("line");
+  const btn = document.getElementById("save");
+  function check() {
+    document.getElementById("count").textContent = line.value.length;
+    btn.disabled = !(picked.size && line.value.trim().length >= 2);
+  }
+  line.addEventListener("input", check);
+
+  function toast(msg) {
+    const t = document.getElementById("toast");
+    t.textContent = msg; t.classList.add("show");
+    setTimeout(() => t.classList.remove("show"), 2600);
+  }
+
+  btn.onclick = () => {
+    if (btn.disabled || data.records.some(r => r.date === today())) return;
+    const now = new Date();
+    data.records.push({
+      date: today(),
+      time: `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`,
+      subjects: SUBJECTS.filter(s => picked.has(s)),
+      line: line.value.trim()
+    });
+    const run = streakDays();
+    const won = chickenProgress(run) >= GOAL;
+    if (won) data.rewards.push(today());
+    if (!save(data)) { toast("저장이 안 됐어요. 시크릿 모드를 꺼 주세요"); data = load(); return; }
+    render();
+    toast(won ? "🍗 연속 7일! 치킨 획득!" : `🔥 ${run.length}일째! 불 붙었다`);
+  };
+
+  render();
+  // 자정이 지나면 다시 그린다
+  let shown = today();
+  setInterval(() => { if (today() !== shown) { shown = today(); render(); } }, 30000);
+</script>
+</body>
+</html>
