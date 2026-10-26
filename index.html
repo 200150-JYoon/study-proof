@@ -137,6 +137,10 @@
   .install ol { margin: 0; padding-left: 20px; font-size: 15px; line-height: 1.7; }
   .install b { color: var(--text); }
   .install .btn { margin-top: 14px; font-size: 18px; background: linear-gradient(180deg, #7ff3e3, var(--neon)); color: #04211d; box-shadow: none; }
+  .install .url {
+    display: block; margin-top: 12px; padding: 10px 12px; border-radius: 10px; background: var(--panel-2);
+    border: 1px solid var(--line); color: var(--neon); font-size: 15px; word-break: break-all; user-select: all;
+  }
   .install .close {
     position: absolute; top: 12px; right: 12px; border: 0; background: none; color: var(--muted);
     font: inherit; font-size: 13px; cursor: pointer; padding: 4px;
@@ -155,7 +159,7 @@
 
   <section class="card install" id="install" hidden>
     <button class="close" id="installClose" type="button">닫기 ✕</button>
-    <h2 class="display">📲 홈 화면에 아이콘 만들기</h2>
+    <h2 class="display" id="installTitle">📲 홈 화면에 아이콘 만들기</h2>
     <div id="installBody"></div>
   </section>
 
@@ -354,16 +358,17 @@
     toast(won ? "🍗 연속 7일! 치킨 획득!" : `🔥 ${run.length}일째! 불 붙었다`);
   };
 
-  // 홈 화면 추가 안내: 아이콘으로 들어오면 보이지 않는다
-  const HIDE_KEY = "study-install-hidden";
+  // 들어오는 길 안내
+  // 아이폰: 단축어 자동화로 매일 정해진 시간에 사이트가 저절로 열리게 한다 (홈 화면 추가 대신)
+  // 안드로이드: 홈 화면 아이콘 (아이콘으로 들어오면 보이지 않는다)
   const ua = navigator.userAgent;
   const standalone = matchMedia("(display-mode: standalone)").matches || navigator.standalone;
   const isKakao = /KAKAOTALK/i.test(ua);
   const isIOS = /iPhone|iPad|iPod/i.test(ua) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
-  // 아이폰 크롬·엣지·파이어폭스는 주소창의 공유 버튼으로 추가할 수 있다
-  const isIOSOtherBrowser = isIOS && /CriOS|EdgiOS|FxiOS/i.test(ua);
   // 네이버·인스타 같은 앱 안 브라우저에서는 홈 화면 추가가 안 된다
   const isInApp = /NAVER|Instagram|FBAN|FBAV|Line\/|DaumApps|everytimeApp|; wv\)/i.test(ua);
+  const HIDE_KEY = isIOS ? "study-shortcut-hidden" : "study-install-hidden";
+  const SITE_URL = location.origin + "/";
   let installEvent = null;
 
   function hiddenByUser() { try { return localStorage.getItem(HIDE_KEY) === "1"; } catch (e) { return false; } }
@@ -371,13 +376,33 @@
   function showInstall() {
     if (standalone || hiddenByUser()) return;
     const body = document.getElementById("installBody");
-    const browser = isIOS ? "사파리" : "크롬";
-    if (isKakao) {
+    const browser = "크롬";
+    if (isIOS) {
+      document.getElementById("installTitle").textContent = "⏰ 매일 밤 저절로 열리게 하기";
+      body.innerHTML = `<ol>
+        <li>아래 버튼으로 <b>주소 복사</b></li>
+        <li>아이폰 <b>단축어</b> 앱 → 아래 <b>자동화</b> 탭 → 오른쪽 위 <b>+</b></li>
+        <li><b>특정 시간</b> → 시간 정하기 (예: 오후 9:00), <b>매일</b>, <b>즉시 실행</b> 고르고 <b>다음</b></li>
+        <li><b>새로운 빈 자동화</b> → <b>동작 추가</b> → <b>URL 열기</b> 검색해서 누르기</li>
+        <li>URL 자리에 복사한 주소 붙여넣고 <b>완료</b></li></ol>
+        <span class="url" id="siteUrl">${SITE_URL}</span>
+        <button class="btn" id="copyUrl" type="button">주소 복사</button>
+        <p class="label" style="margin:10px 0 0">⚠️ 기록은 연 곳마다 따로 쌓여. 오늘부터는 카톡 말고 단축어로 열린 화면에서만 인증하기</p>`;
+      document.getElementById("copyUrl").onclick = async () => {
+        try { await navigator.clipboard.writeText(SITE_URL); toast("주소 복사 완료! 단축어 앱으로 가자"); }
+        catch (e) {
+          const range = document.createRange();
+          range.selectNodeContents(document.getElementById("siteUrl"));
+          getSelection().removeAllRanges(); getSelection().addRange(range);
+          toast("파란 주소를 길게 눌러 복사해 줘");
+        }
+      };
+    } else if (isKakao) {
       // 카톡 안에서는 홈 화면 추가가 안 되니 먼저 바깥 브라우저로 연다
       body.innerHTML = `<p class="label">카톡 안에서는 아이콘을 못 만들어. ${browser}로 옮겨 가자</p>
         <ol>
         <li>아래 버튼으로 <b>${browser}</b>에서 열기</li>
-        <li>버튼이 안 되면: 화면 오른쪽 아래 <b>⋯</b> 또는 <b>공유</b> 버튼 → <b>${isIOS ? "Safari로 열기" : "다른 브라우저로 열기"}</b></li>
+        <li>버튼이 안 되면: 화면 오른쪽 아래 <b>⋯</b> 또는 <b>공유</b> 버튼 → <b>다른 브라우저로 열기</b></li>
         <li>${browser}에서 열리면 이 안내가 다시 나와. 그대로 따라 하면 끝</li></ol>
         <button class="btn" id="openExternal" type="button">${browser}로 열기</button>`;
       document.getElementById("openExternal").onclick = () => {
@@ -386,7 +411,7 @@
     } else if (isInApp) {
       body.innerHTML = `<p class="label">이 앱 안에서는 아이콘을 못 만들어</p>
         <ol>
-        <li>화면의 <b>⋯</b> 또는 <b>공유</b> 버튼 → <b>${isIOS ? "Safari로 열기" : "다른 브라우저로 열기"}</b></li>
+        <li>화면의 <b>⋯</b> 또는 <b>공유</b> 버튼 → <b>다른 브라우저로 열기</b></li>
         <li>${browser}에서 열리면 이 안내를 따라 하면 끝</li></ol>`;
     } else if (installEvent) {
       body.innerHTML = `<ol><li>버튼 한 번이면 🔥 아이콘이 생겨요</li><li>내일부터는 아이콘만 누르면 바로 인증</li></ol>
@@ -397,20 +422,6 @@
         installEvent = null;
         if (outcome === "accepted") document.getElementById("install").hidden = true;
       };
-    } else if (isIOSOtherBrowser) {
-      body.innerHTML = `<ol>
-        <li>주소창 오른쪽 <b>공유 버튼(⬆️)</b> 누르기</li>
-        <li>목록을 아래로 내려 <b>홈 화면에 추가</b> 누르기 (안 보이면 <b>더 보기</b>)</li>
-        <li>오른쪽 위 <b>추가</b> 누르면 🔥 아이콘 완성</li></ol>
-        <p class="label" style="margin:10px 0 0">'홈 화면에 추가'가 끝까지 없으면 사파리로 이 주소를 열어서 해 줘</p>
-        <p class="label" style="margin:6px 0 0">⚠️ 아이콘으로 열면 기록이 처음부터 시작돼. 오늘부터는 아이콘으로만 인증하기</p>`;
-    } else if (isIOS) {
-      body.innerHTML = `<ol>
-        <li>사파리 주소창 옆 <b>⋯ 버튼</b> 누르기<br>(⋯이 없으면 아래쪽 <b>공유 버튼(⬆️)</b>)</li>
-        <li><b>공유</b> 누르기 (바로 목록이 나오면 건너뛰기)</li>
-        <li>목록을 아래로 내려 <b>홈 화면에 추가</b> 누르기 (안 보이면 <b>더 보기</b>)</li>
-        <li>오른쪽 위 <b>추가</b> 누르면 🔥 아이콘 완성</li></ol>
-        <p class="label" style="margin:10px 0 0">⚠️ 아이콘으로 열면 기록이 처음부터 시작돼. 오늘부터는 아이콘으로만 인증하기</p>`;
     } else {
       body.innerHTML = `<ol>
         <li>크롬 오른쪽 위 <b>⋮ 메뉴</b> 누르기</li>
